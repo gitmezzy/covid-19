@@ -8,8 +8,17 @@ output:
       collapsed: false
 ---
 
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
 
 Analysis of the COVID-19 pandemic in the United States using data from the [COVID Tracking Project](https://covidtracking.com/)
@@ -52,7 +61,9 @@ df %<>%
     dailyNegativeTests = negative - lag(negative),
     dailyNegativeTestsRollMean = rollmean(dailyNegativeTests,7, na.pad=TRUE, align="right"),
     dailyPositiveRate = 100*dailyPositiveTests/(dailyPositiveTests+dailyNegativeTests),
-    dailyPositiveRateRollMean = 100*dailyPositiveTestsRollMean/(dailyPositiveTestsRollMean+dailyNegativeTestsRollMean)) %>%
+    dailyPositiveRateRollMean = 100*dailyPositiveTestsRollMean/(dailyPositiveTestsRollMean+dailyNegativeTestsRollMean),
+    dailyEstimatedActualCases = 100*dailyPositiveTests^2/dailyTests,
+    dailyEstimatedActualCasesRollMean = rollmean(dailyEstimatedActualCases,7, na.pad=TRUE, align="right")) %>%
   as_tibble()
 
 df_US <-
@@ -63,10 +74,25 @@ df_US <-
 ## United States
 This section focuses on the United States as a whole. Analysis for individual states is in the next section.
 
+### Estimated Actual Cases
+
+$\large estimated\hspace{1mm}actual\hspace{1mm}cases\hspace{1mm} = 100*test\hspace{1mm}positive\hspace{1mm}rate*positive\hspace{1mm}tests$
+
+```{r estimatedCases, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyEstimatedActualCases, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
+fig <- fig %>% add_trace(y = ~dailyEstimatedActualCasesRollMean, color = I('red'), name = '7 day rolling average')
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Cases [thousands]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
 ### Test Positive Rate
 The test positive rate is the percent of all COVID-19 tests that are positive.
 
-$\large test\hspace{1mm}positive\hspace{1mm}rate\hspace{1mm} [\%] = 100(\frac{positive\hspace{1mm}tests}{positive\hspace{1mm}tests + negative\hspace{1mm}tests})$
+$\large test\hspace{1mm}positive\hspace{1mm}rate\hspace{1mm} [\%] = 100*(\frac{positive\hspace{1mm}tests}{positive\hspace{1mm}tests + negative\hspace{1mm}tests})$
 
 According to [Johns Hopkins](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html):
 
@@ -79,25 +105,34 @@ The percent positive is a critical measure because it gives us an indication how
 >
 A high percent positive means that more testing should probably be done—and it suggests that it is not a good time to relax restrictions aimed at reducing coronavirus transmission. Because a high percentage of positive tests suggests high coronavirus infection rates (due to high transmission in the community), a high percent positive can indicate it may be a good time to add restrictions to slow the spread of disease.
 
-```{r pressure, echo=FALSE}
-colors <- c("Daily" = "black", "7 day rolling average" = "red")
+```{r testPositiveRate, echo=FALSE}
+# colors <- c("Daily" = "black", "7 day rolling average" = "red")
+# 
+# p <-
+#   df_US %>%
+#   ggplot(aes(date)) + 
+#   geom_line(aes(y = dailyPositiveRate, color = "Daily"), size = 0.25) + 
+#   geom_line(aes(y = dailyPositiveRateRollMean, color = "7 day rolling average"), size = 1) +
+#   ylab("Test Positive Rate [%]") +
+#   theme(axis.text.x = element_text(size = rel(1.5))) +
+#   theme(axis.title.x = element_blank()) +
+#   theme(axis.text.y = element_text(size = rel(1.5))) +
+#   theme(axis.title.y = element_text(size = rel(1.5))) +
+#   scale_color_manual(values = colors) +
+#   theme(legend.text = element_text(size = 14))
+# 
+# ggplotly(p) %>%
+#   layout(legend = list(orientation = "v", x = 0.6))
 
-p <-
-  df_US %>%
-  ggplot(aes(date)) + 
-  geom_line(aes(y = dailyPositiveRate, color = "Daily"), size = 0.25) + 
-  geom_line(aes(y = dailyPositiveRateRollMean, color = "7 day rolling average"), size = 1) +
-  ylab("Test Positive Rate [%]") +
-  theme(axis.text.x = element_text(size = rel(1.5))) +
-  theme(axis.title.x = element_blank()) +
-  theme(axis.text.y = element_text(size = rel(1.5))) +
-  theme(axis.title.y = element_text(size = rel(1.5))) +
-  ggtitle('United States Test Positive Rate') +
-  scale_color_manual(values = colors) +
-  theme(legend.text = element_text(size = 14))
+fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveRate, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
+fig <- fig %>% add_trace(y = ~dailyPositiveRateRollMean, color = I('red'), name = '7 day rolling average')
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Test Positive Rate [%]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
 
-ggplotly(p) %>%
-  layout(legend = list(orientation = "v", x = 0.6))
 ```
 
 ## Individual States
