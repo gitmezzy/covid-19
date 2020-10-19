@@ -28,11 +28,11 @@ Code is written in R Markdown and is available at https://github.com/gitmezzy/co
 ```{r include=FALSE}
 library(data.table)
 library(dtplyr)
+library(tidyr)
 library(dplyr, warn.conflicts = FALSE)
 library(readr)
 library(lubridate)
 library(zoo)
-library(ggplot2)
 library(plotly)
 
 df <- read_csv("https://covidtracking.com/api/v1/states/daily.csv")
@@ -53,17 +53,32 @@ df %<>%
   group_by(state) %>%
   mutate(
     dailyDeaths = death - lag(death),
-    dailyDeathsRollMean = rollmean(dailyDeaths,7, na.pad=TRUE, align="right"),
+    dailyDeathsRollMean = rollmean(dailyDeaths, 7, fill = NA),
     dailyTests = (positive + negative) - lag(positive + negative),
-    dailyTestsRollMean = rollmean(dailyTests,7, na.pad=TRUE, align="right"),
+    dailyTestsRollMean = rollmean(dailyTests, 7, fill = NA),
     dailyPositiveTests = positive - lag(positive),
-    dailyPositiveTestsRollMean = rollmean(dailyPositiveTests,7, na.pad=TRUE, align="right"),
+    dailyPositiveTestsRollMean = rollmean(dailyPositiveTests, 7, fill = NA),
     dailyNegativeTests = negative - lag(negative),
-    dailyNegativeTestsRollMean = rollmean(dailyNegativeTests,7, na.pad=TRUE, align="right"),
+    dailyNegativeTestsRollMean = rollmean(dailyNegativeTests, 7, fill = NA),
     dailyPositiveRate = 100*dailyPositiveTests/(dailyPositiveTests+dailyNegativeTests),
     dailyPositiveRateRollMean = 100*dailyPositiveTestsRollMean/(dailyPositiveTestsRollMean+dailyNegativeTestsRollMean),
-    dailyEstimatedActualCases = 100*dailyPositiveTests^2/dailyTests,
-    dailyEstimatedActualCasesRollMean = rollmean(dailyEstimatedActualCases,7, na.pad=TRUE, align="right")) %>%
+    dailyActualCases = 100*dailyPositiveTests^2/dailyTests,
+    dailyActualCasesRollMean = rollmean(dailyActualCases, 7, fill = NA)) %>%
+  as_tibble()
+
+df <- df %>% replace_na(list(dailyActualCases = 0, dailyPositiveTests = 0, dailyDeaths = 0))
+
+df %<>%
+  lazy_dt() %>%
+  arrange(state, date) %>%
+  group_by(state) %>%
+  mutate(
+    totalActualCases = cumsum(dailyActualCases),
+    totalActualCasesRollMean = rollmean(totalActualCases, 7, fill = NA),
+    totalPositiveTests = cumsum(dailyPositiveTests),
+    totalPositiveTestsRollMean = rollmean(totalPositiveTests, 7, fill = NA),
+    totalDeaths = cumsum(dailyDeaths),
+    totalDeathsRollMean = rollmean(totalDeaths, 7, fill = NA)) %>%
   as_tibble()
 
 df_US <-
@@ -71,25 +86,79 @@ df_US <-
   filter(state == "US", .preserve = TRUE)
 ```
 
-## United States
-This section focuses on the United States as a whole. Analysis for individual states is in the next section.
-
-### Estimated Actual Cases
+## Estimated Actual Cases
+One way to estimate the actual number of cases is to normalize the confirmed positive tests by the test positive rate and multiply by a constant.
 
 $\large estimated\hspace{1mm}actual\hspace{1mm}cases\hspace{1mm} = 100*test\hspace{1mm}positive\hspace{1mm}rate*positive\hspace{1mm}tests$
 
-```{r estimatedCases, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~dailyEstimatedActualCases, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
-fig <- fig %>% add_trace(y = ~dailyEstimatedActualCasesRollMean, color = I('red'), name = '7 day rolling average')
+```{r dailyActualCases, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyActualCases, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
+fig <- fig %>% add_trace(y = ~dailyActualCasesRollMean, color = I('red'), name = '7 day rolling average')
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Cases [thousands]"))
+fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Daily Cases [thousands]"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
 fig
 ```
 
-### Test Positive Rate
+```{r totalActualCases, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~totalActualCases, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Total Cases [millions]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
+## Percent of U.S. Population Infected
+```{r percentPopulationInfected, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~100*totalActualCases/328239523, type = 'scatter', mode = 'lines', color = I('black'), name = 'Based on Estimated Actual Cases', width=800)
+fig <- fig %>% add_trace(y = ~100*positiveTestsAntibody/(positiveTestsAntibody+negativeTestsAntibody), color = I('blue'), name = 'Based on Antibody Tests')
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Percent of U.S. Population Infected [%]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig <- fig %>% layout(legend = list(x = 0.6, y = 0.9))
+fig
+```
+
+## Hospitalized Currently
+```{r hospitalized, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~hospitalizedCurrently, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Hospitalized Currently [thousands]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
+## Deaths
+```{r dailyDeaths, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyDeaths, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
+fig <- fig %>% add_trace(y = ~dailyDeathsRollMean, color = I('red'), name = '7 day rolling average')
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Daily Deaths"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
+```{r totalDeaths, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~totalDeaths, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Total Deaths [thousands]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
+## Test Positive Rate
 The test positive rate is the percent of all COVID-19 tests that are positive.
 
 $\large test\hspace{1mm}positive\hspace{1mm}rate\hspace{1mm} [\%] = 100*(\frac{positive\hspace{1mm}tests}{positive\hspace{1mm}tests + negative\hspace{1mm}tests})$
@@ -106,24 +175,6 @@ The percent positive is a critical measure because it gives us an indication how
 A high percent positive means that more testing should probably be done—and it suggests that it is not a good time to relax restrictions aimed at reducing coronavirus transmission. Because a high percentage of positive tests suggests high coronavirus infection rates (due to high transmission in the community), a high percent positive can indicate it may be a good time to add restrictions to slow the spread of disease.
 
 ```{r testPositiveRate, echo=FALSE}
-# colors <- c("Daily" = "black", "7 day rolling average" = "red")
-# 
-# p <-
-#   df_US %>%
-#   ggplot(aes(date)) + 
-#   geom_line(aes(y = dailyPositiveRate, color = "Daily"), size = 0.25) + 
-#   geom_line(aes(y = dailyPositiveRateRollMean, color = "7 day rolling average"), size = 1) +
-#   ylab("Test Positive Rate [%]") +
-#   theme(axis.text.x = element_text(size = rel(1.5))) +
-#   theme(axis.title.x = element_blank()) +
-#   theme(axis.text.y = element_text(size = rel(1.5))) +
-#   theme(axis.title.y = element_text(size = rel(1.5))) +
-#   scale_color_manual(values = colors) +
-#   theme(legend.text = element_text(size = 14))
-# 
-# ggplotly(p) %>%
-#   layout(legend = list(orientation = "v", x = 0.6))
-
 fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveRate, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
 fig <- fig %>% add_trace(y = ~dailyPositiveRateRollMean, color = I('red'), name = '7 day rolling average')
 fig <- fig %>% layout(legend = list(orientation = 'v'))
@@ -135,4 +186,24 @@ fig
 
 ```
 
-## Individual States
+## Confirmed Cases
+```{r confirmedCases, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveTests, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
+fig <- fig %>% add_trace(y = ~dailyPositiveTestsRollMean, color = I('red'), name = '7 day rolling average')
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Confirmed Daily Cases [thousands]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
+```{r totalConfirmedCases, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~totalPositiveTests, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Total Confirmed Cases [millions]"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
