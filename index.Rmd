@@ -25,6 +25,8 @@ Analysis of the COVID-19 pandemic in the United States using data from the [COVI
 
 Code is written in R Markdown and is available at https://github.com/gitmezzy/covid-19
 
+Updated `r toString(Sys.Date())`
+
 ```{r include=FALSE}
 library(data.table)
 library(dtplyr)
@@ -66,7 +68,7 @@ df %<>%
     dailyActualCasesRollMean = rollmean(dailyActualCases, 7, fill = NA)) %>%
   as_tibble()
 
-df <- df %>% replace_na(list(dailyActualCases = 0, dailyPositiveTests = 0, dailyDeaths = 0))
+df <- df %>% replace_na(list(dailyTests = 0, dailyActualCases = 0, dailyPositiveTests = 0, dailyDeaths = 0))
 
 df %<>%
   lazy_dt() %>%
@@ -74,11 +76,9 @@ df %<>%
   group_by(state) %>%
   mutate(
     totalActualCases = cumsum(dailyActualCases),
-    totalActualCasesRollMean = rollmean(totalActualCases, 7, fill = NA),
+    totalTests = cumsum(dailyTests),
     totalPositiveTests = cumsum(dailyPositiveTests),
-    totalPositiveTestsRollMean = rollmean(totalPositiveTests, 7, fill = NA),
-    totalDeaths = cumsum(dailyDeaths),
-    totalDeathsRollMean = rollmean(totalDeaths, 7, fill = NA)) %>%
+    totalDeaths = cumsum(dailyDeaths)) %>%
   as_tibble()
 
 df_US <-
@@ -95,7 +95,7 @@ $\large estimated\hspace{1mm}actual\hspace{1mm}cases\hspace{1mm} = 100*test\hspa
 fig <- plot_ly(df_US, x = ~date, y = ~dailyActualCases, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
 fig <- fig %>% add_trace(y = ~dailyActualCasesRollMean, color = I('red'), name = '7 day rolling average')
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Daily Cases [thousands]"))
+fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Daily Cases"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
@@ -105,7 +105,7 @@ fig
 ```{r totalActualCases, echo=FALSE}
 fig <- plot_ly(df_US, x = ~date, y = ~totalActualCases, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Total Cases [millions]"))
+fig <- fig %>% layout(yaxis = list(title = "Estimated Actual Total Cases"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
@@ -129,7 +129,7 @@ fig
 ```{r hospitalized, echo=FALSE}
 fig <- plot_ly(df_US, x = ~date, y = ~hospitalizedCurrently, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Hospitalized Currently [thousands]"))
+fig <- fig %>% layout(yaxis = list(title = "Hospitalized Currently"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
@@ -151,7 +151,7 @@ fig
 ```{r totalDeaths, echo=FALSE}
 fig <- plot_ly(df_US, x = ~date, y = ~totalDeaths, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Total Deaths [thousands]"))
+fig <- fig %>% layout(yaxis = list(title = "Total Deaths"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
@@ -186,12 +186,34 @@ fig
 
 ```
 
+## Tests
+```{r dailyTests, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyTests, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
+fig <- fig %>% add_trace(y = ~dailyTestsRollMean, color = I('red'), name = '7 day rolling average')
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Daily Tests"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
+```{r totalTests, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~totalTests, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
+fig <- fig %>% layout(legend = list(orientation = 'v'))
+fig <- fig %>% layout(yaxis = list(title = "Total Tests"))
+fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
+                      legend = list(font = list(size = 16)))
+fig
+```
+
 ## Confirmed Cases
 ```{r confirmedCases, echo=FALSE}
 fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveTests, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
 fig <- fig %>% add_trace(y = ~dailyPositiveTestsRollMean, color = I('red'), name = '7 day rolling average')
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Confirmed Daily Cases [thousands]"))
+fig <- fig %>% layout(yaxis = list(title = "Confirmed Daily Cases"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
@@ -201,7 +223,7 @@ fig
 ```{r totalConfirmedCases, echo=FALSE}
 fig <- plot_ly(df_US, x = ~date, y = ~totalPositiveTests, type = 'scatter', mode = 'lines', color = I('black'), name = 'Daily', width=800)
 fig <- fig %>% layout(legend = list(orientation = 'v'))
-fig <- fig %>% layout(yaxis = list(title = "Total Confirmed Cases [millions]"))
+fig <- fig %>% layout(yaxis = list(title = "Total Confirmed Cases"))
 fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
                       legend = list(font = list(size = 16)))
