@@ -36,8 +36,6 @@ library(readr)
 library(lubridate)
 library(zoo)
 library(plotly)
-library(ggplot2)
-library(RColorBrewer)
 
 df <- read_csv("https://covidtracking.com/api/v1/states/daily.csv", na = c("", "NA", "NULL", "NaN"))
 df_CDC <- read_csv("CDC_antibody_seroprevalence.csv")
@@ -45,12 +43,6 @@ df_CDC <- read_csv("CDC_antibody_seroprevalence.csv")
 df <-
   df %>%
   mutate(population = rep(NA,nrow(df)))
-# df_population <- left_join(df, df_CDC, by = c("state")) %>%
-#   mutate(population = ifelse(is.na(population.x), population.y, population.x)) %>%
-#   select(population)
-# df <-
-#   df %>%
-#   mutate(population = df_population)
 df <-
   df %>%
   mutate(population =
@@ -142,11 +134,6 @@ df_US <-
 df <-
   df %>%
   filter(state != "US", .preserve = TRUE)
-
-# vq[is.nan(vq)] <- NA
-# vq[vq <= 0] <- NA
-# vq[is.infinite(vq)] <- NA
-
 ```
 
 ## Actual Cases
