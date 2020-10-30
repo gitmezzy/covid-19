@@ -3,18 +3,10 @@ title: "COVID-19"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 2
     toc_float:
       collapsed: false
 ---
-
-<style type="text/css">
-.main-container {
-  max-width: 1800px;
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -25,14 +17,14 @@ Analysis of the COVID-19 tests, cases, deaths, and hospitalizations in the Unite
 
 Code is written in R and is available at https://github.com/gitmezzy/covid-19
 
+This page can be viewed on a tablet or phone but interacting with the plots works best on a laptop or desktop.
+
 Updated `r toString(Sys.Date())`
 
 ```{r include=FALSE}
-library(data.table)
-library(dtplyr)
-library(tidyr)
-library(dplyr, warn.conflicts = FALSE)
 library(readr)
+library(tidyr)
+library(dplyr)
 library(lubridate)
 library(zoo)
 library(plotly)
@@ -42,7 +34,7 @@ df_CDC <- read_csv("CDC_antibody_seroprevalence.csv")
 
 df <-
   df %>%
-  mutate(population = rep(NA,nrow(df)))
+  mutate(population = rep(NA, nrow(df)))
 df <-
   df %>%
   mutate(population =
@@ -56,7 +48,6 @@ df <-
   complete(state, nesting(date)) %>%
   filter(!(state %in% c("AS","GU","MP","PR","VI")), .preserve = TRUE)
 
-populationUnitedStates <- sum(df_CDC[,"population"])
 df_CDC <-
   df_CDC %>%
   filter(!(is.na(percentPositiveAugust2020))) %>%
@@ -137,13 +128,13 @@ df <-
 ```
 
 ## Actual Cases
-The confirmed daily cases curve that is [often reported](https://graphics.reuters.com/HEALTH-CORONAVIRUS/USA-TRENDS/dgkvlgkrkpb/index.html) is misleading. It fails to account for the number of daily tests and thus skews the daily cases towards points in time when more tests were done. Testing has increased significantly since the start of the pandemic and thus it must be accounted for when trying to estimate the actual number of cases over time. For example, in the U.S. in mid March 2020 only about 10,000 tests were done per day, but by the end of October 2020 1 million tests were being done each day.
+The confirmed daily cases curve that is [often reported](https://graphics.reuters.com/HEALTH-CORONAVIRUS/USA-TRENDS/dgkvlgkrkpb/index.html) can be misleading. It fails to account for the number of daily tests and thus skews the daily cases towards points in time when more tests were done. Testing has increased significantly since the start of the pandemic and thus it must be accounted for when trying to estimate the actual number of cases over time. For example, in the U.S. in mid March 2020 only about 10,000 tests were done per day, but by the end of October 2020 1 million tests were being done each day.
 
-One way to estimate the actual number of cases in a way that accounts for testing is to normalize the number of confirmed positive tests by the test positive rate and multiply by by a constant. The test positive rate, defined as the the fraction of all COVID-19 tests that are positive, is described in more detail in the next section.
+One way to estimate the actual number of cases in a way that accounts for testing is to normalize the number of confirmed positive tests by the test positive rate and multiply by by a constant, referred to here as the *antibody constant*. The test positive rate, defined as the the fraction of all COVID-19 tests that are positive, is described in more detail in the next section.
 
 Almost all references to testing on this page are for viral PCR tests. The one exception is the antibody seroprevalence which is based on serology tests that look for antibodies which can show prior exposure to COVID-19. [Johns Hopkins](https://coronavirus.jhu.edu/testing/testing-faq/overview) has more details on viral PCR and antibody serological tests.
 
-In summary, the test positive rate is used to correct the shape of the cases curve over time as the number of tests change. The antibody constant is used to calibrate the magnitude of the cases curve. 
+The test positive rate is used to correct the shape of the cases curve over time as the number of tests change, and the antibody constant is used to calibrate the magnitude of the cases curve to a known antibody seroprevalence survey. 
 
 $$
 \large
@@ -174,15 +165,16 @@ $\large Where:\hspace{1mm}r_s \hspace{1mm} is \hspace{1mm} the \hspace{1mm} anti
 
 $\large \hspace{21mm}N \hspace{1mm} is \hspace{1mm} the \hspace{1mm} total \hspace{1mm} population$
 
-```{r estimatedActualCases, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~dailyActualCases, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width=1000) %>%
-  add_trace(y = ~dailyActualCasesRollMean, color = I("black"), name = "7 Day Average") %>%
-  add_trace(y = ~totalActualCases, color = I("blue"), name = "Total", yaxis = "y2") %>%
+```{r actualCases, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyActualCasesRollMean, type = "scatter", mode = "lines", color = I("black"), name = "Daily Actual", width=1010) %>%
+  add_trace(y = ~dailyPositiveTestsRollMean, color = I("black"), name = "Daily Confirmed", line = list(dash = "dash")) %>%
+  add_trace(y = ~totalActualCases, color = I("red"), name = "Total Actual", yaxis = "y2") %>%
+  add_trace(y = ~totalPositiveTests, color = I("red"), name = "Total Confirmed", yaxis = "y2", line = list(dash = "dash")) %>%
   layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
   layout(yaxis = list(title = "Daily", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
-  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "blue"), tickfont = list(size = 14, color = "blue"), overlaying = "y", side = "right")) %>%
+  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "red"), tickfont = list(size = 14, color = "red"), overlaying = "y", side = "right")) %>%
   layout(legend = list(x = 1.07, font = list(size = 16))) %>%
-  layout(title = "Actual Cases in the U.S.", font = list(size = 16)) %>%
+  layout(title = "Actual vs. Confirmed Cases in the U.S.", font = list(size = 16)) %>%
   layout(autosize = F, margin = list(t=50)) %>%
   layout(hovermode = "compare")
 fig
@@ -259,15 +251,6 @@ A high percent positive means that more testing should probably be done—and it
 The higher the percent positive is, the more concerning it is. As a rule of thumb, however, one threshold for the percent positive being “too high” is 5%.
 
 ```{r testPositiveRate, echo=FALSE}
-# fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveRate, type = 'scatter', mode = 'lines', color = I('gray'), name = 'Daily', width=1000)
-# fig <- fig %>% add_trace(y = ~dailyPositiveRateRollMean, color = I('red'), name = '7 day rolling average')
-# fig <- fig %>% layout(legend = list(orientation = 'v'))
-# fig <- fig %>% layout(yaxis = list(title = "Daily Test Positive Rate for U.S. [%]"))
-# fig <- fig %>% layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
-#                       yaxis = list(titlefont = list(size = 22), tickfont = list(size = 16)),
-#                       legend = list(font = list(size = 16)))
-# fig
-
 fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveRate, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width=1000) %>%
   add_trace(y = ~dailyPositiveRateRollMean, color = I("black"), name = "7 Day Average") %>%
   layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
@@ -279,7 +262,7 @@ fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveRate, type = "scatter", mode 
 fig
 ```
 
-The test positive rate in the U.S. was only below 5% from early to mid June 2020, right around the time the initial lockdowns were being lifted.
+The test positive rate in the U.S. was only below 5% from early to mid June 2020, right around the time the initial lockdowns were being lifted. The two plots below are the same, but the z-axis is limited to 5% in the first one to show how most states are failing to stay below a 5% test positive rate.
 
 ```{r testPositiveRate2, echo=FALSE}
 x <- sort(pull(distinct(df[,"date"])))
@@ -294,10 +277,10 @@ fig <- plot_ly(
   y = y,
   z = z,
   type = "heatmap",
-  zmin=0,
-  zmax=5,
-  width=875,
-  height=800) %>%
+  zmin = 0,
+  zmax = 5,
+  width = 875,
+  height = 800) %>%
   layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
          yaxis = list(gridcolor = "black", side = "left"),
          title = "Daily Test Positive Rate by State [%]")
@@ -315,24 +298,72 @@ fig <- plot_ly(
   y = y,
   z = z,
   type = "heatmap",
-  zmin=0,
-  zmax=60,
-  width=883,
-  height=800) %>%
+  zmin = 0,
+  zmax = 60,
+  width = 883,
+  height = 800) %>%
   layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
          yaxis = list(gridcolor = "black", side = "left"),
          title = "Daily Test Positive Rate by State [%]")
 fig
 ```
 
+## Hospitalizations
+```{r hospitalizations, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~hospitalizedCurrently, type = "scatter", mode = "lines", color = I("black"), name = "Daily", width = 800) %>%
+  layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
+  layout(yaxis = list(title = "", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
+  layout(legend = list(x = 1.07, font = list(size = 16))) %>%
+  layout(title = "Current Hospitalizations in the U.S.", font = list(size = 16)) %>%
+  layout(autosize = F, margin = list(t=50)) %>%
+  layout(hovermode = "compare")
+fig
+
+x <- sort(pull(distinct(df[,"date"])))
+y <- pull(distinct(df[,"state"]))
+z <- matrix(pull(df[,"hospitalizedCurrently"]), nrow = length(x), ncol = length(y))
+z <- t(z)
+z[is.infinite(z)] <- NA
+fig <- plot_ly(
+  x = x,
+  y = y,
+  z = z,
+  type = "heatmap",
+  zmin = 0,
+  width = 890,
+  height = 800) %>%
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
+         yaxis = list(gridcolor = "black", side = "left"),
+         title = "Current Hospitalizations by State")
+fig
+
+x <- sort(pull(distinct(df[,"date"])))
+y <- pull(distinct(df[,"state"]))
+z <- matrix(pull(df[,"hospitalizedCurrently"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
+z <- t(z)
+z[is.infinite(z)] <- NA
+fig <- plot_ly(
+  x = x,
+  y = y,
+  z = z,
+  type = "heatmap",
+  zmin = 0,
+  width = 890,
+  height = 800) %>%
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
+         yaxis = list(gridcolor = "black", side = "left"),
+         title = "Current Hospitalizations per 100,000 by State")
+fig
+```
+
 ## Deaths
-```{r dailyDeaths, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~dailyDeaths, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width=1000) %>%
+```{r deaths, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyDeaths, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width = 1000) %>%
   add_trace(y = ~dailyDeathsRollMean, color = I("black"), name = "7 Day Average") %>%
-  add_trace(y = ~totalDeaths, color = I("blue"), name = "Total", yaxis = "y2") %>%
+  add_trace(y = ~totalDeaths, color = I("red"), name = "Total", yaxis = "y2") %>%
   layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
   layout(yaxis = list(title = "Daily", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
-  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "blue"), tickfont = list(size = 14, color = "blue"), overlaying = "y", side = "right")) %>%
+  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "red"), tickfont = list(size = 14, color = "red"), overlaying = "y", side = "right")) %>%
   layout(legend = list(x = 1.07, font = list(size = 16))) %>%
   layout(title = "Deaths in the U.S.", font = list(size = 16)) %>%
   layout(autosize = F, margin = list(t=50)) %>%
@@ -349,9 +380,9 @@ fig <- plot_ly(
   y = y,
   z = z,
   type = "heatmap",
-  zmin=0,
-  width=890,
-  height=800) %>%
+  zmin = 0,
+  width = 890,
+  height = 800) %>%
   layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
          yaxis = list(gridcolor = "black", side = "left"),
          title = "Daily Deaths by State")
@@ -377,60 +408,12 @@ fig <- plot_ly(
 fig
 ```
 
-## Hospitalizations
-```{r hospitalized, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~hospitalizedCurrently, type = "scatter", mode = "lines", color = I("black"), name = "Daily", width=800) %>%
-  layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
-  layout(yaxis = list(title = "", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
-  layout(legend = list(x = 1.07, font = list(size = 16))) %>%
-  layout(title = "Current Hospitalizations in the U.S.", font = list(size = 16)) %>%
-  layout(autosize = F, margin = list(t=50)) %>%
-  layout(hovermode = "compare")
-fig
-
-x <- sort(pull(distinct(df[,"date"])))
-y <- pull(distinct(df[,"state"]))
-z <- matrix(pull(df[,"hospitalizedCurrently"]), nrow = length(x), ncol = length(y))
-z <- t(z)
-z[is.infinite(z)] <- NA
-fig <- plot_ly(
-  x = x,
-  y = y,
-  z = z,
-  type = "heatmap",
-  zmin=0,
-  width=890,
-  height=800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
-         title = "Current Hospitalizations by State")
-fig
-
-x <- sort(pull(distinct(df[,"date"])))
-y <- pull(distinct(df[,"state"]))
-z <- matrix(pull(df[,"hospitalizedCurrently"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
-z <- t(z)
-z[is.infinite(z)] <- NA
-fig <- plot_ly(
-  x = x,
-  y = y,
-  z = z,
-  type = "heatmap",
-  zmin=0,
-  width=890,
-  height=800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
-         title = "Current Hospitalizations per 100,000 by State")
-fig
-```
-
 ## Death Rates
 ```{r deathRates, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~100*dailyDeathsRollMean/dailyActualCasesRollMean, type = "scatter", mode = "lines", color = I("black"), name = "Per Acual Case", width=1020) %>%
-  add_trace(y = ~100*dailyDeathsRollMean/hospitalizedCurrently, color = I("red"), name = "Per Hospitalization") %>%
+fig <- plot_ly(df_US, x = ~date, y = ~100*dailyDeathsRollMean/dailyActualCasesRollMean, type = "scatter", mode = "lines", color = I("black"), name = "Per Actual Case", width = 1020) %>%
+  add_trace(y = ~100*dailyDeathsRollMean/hospitalizedCurrently, color = I("blue"), name = "Per Hospitalization") %>%
   layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
-  layout(yaxis = list(title = "Daily", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
+  layout(yaxis = list(title = "", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
   layout(legend = list(x = 1.07, font = list(size = 16))) %>%
   layout(title = "Death Rates in the U.S. [%]", font = list(size = 16)) %>%
   layout(autosize = F, margin = list(t=50)) %>%
@@ -439,30 +422,15 @@ fig
 ```
 
 ## Tests
-```{r dailyTests, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~dailyTests, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width=1000) %>%
+```{r tests, echo=FALSE}
+fig <- plot_ly(df_US, x = ~date, y = ~dailyTests, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width = 1000) %>%
   add_trace(y = ~dailyTestsRollMean, color = I("black"), name = "7 Day Average") %>%
-  add_trace(y = ~totalTests, color = I("blue"), name = "Total", yaxis = "y2") %>%
+  add_trace(y = ~totalTests, color = I("red"), name = "Total", yaxis = "y2") %>%
   layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
   layout(yaxis = list(title = "Daily", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
-  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "blue"), tickfont = list(size = 14, color = "blue"), overlaying = "y", side = "right")) %>%
+  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "red"), tickfont = list(size = 14, color = "red"), overlaying = "y", side = "right")) %>%
   layout(legend = list(x = 1.07, font = list(size = 16))) %>%
   layout(title = "Tests in the U.S.", font = list(size = 16)) %>%
-  layout(autosize = F, margin = list(t=50)) %>%
-  layout(hovermode = "compare")
-fig
-```
-
-## Confirmed Cases
-```{r confirmedCases, echo=FALSE}
-fig <- plot_ly(df_US, x = ~date, y = ~dailyPositiveTests, type = "scatter", mode = "lines", color = I("gray"), name = "Daily", width=1000) %>%
-  add_trace(y = ~dailyPositiveTestsRollMean, color = I("black"), name = "7 Day Average") %>%
-  add_trace(y = ~totalPositiveTests, color = I("blue"), name = "Total", yaxis = "y2") %>%
-  layout(xaxis = list(titlefont = list(size = 22), tickfont = list(size = 14))) %>%
-  layout(yaxis = list(title = "Daily", titlefont = list(size = 20), tickfont = list(size = 14))) %>%
-  layout(yaxis2 = list(title = "Total", titlefont = list(size = 20, color = "blue"), tickfont = list(size = 14, color = "blue"), overlaying = "y", side = "right")) %>%
-  layout(legend = list(x = 1.07, font = list(size = 16))) %>%
-  layout(title = "Confirmed Cases in the U.S.", font = list(size = 16)) %>%
   layout(autosize = F, margin = list(t=50)) %>%
   layout(hovermode = "compare")
 fig
