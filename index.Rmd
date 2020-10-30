@@ -1,5 +1,5 @@
 ---
-title: "COVID-19"
+title: "COVID-19 Stats"
 output:
   html_document:
     toc: true
@@ -13,11 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
 
-Analysis of the COVID-19 tests, cases, deaths, and hospitalizations in the United States using data from the [COVID Tracking Project](https://covidtracking.com/)
+Analysis of COVID-19 tests, cases, hospitalizations, and deaths in the United States using data from the [COVID Tracking Project](https://covidtracking.com/)
 
 Code is written in R and is available at https://github.com/gitmezzy/covid-19
 
-This page can be viewed on a tablet or phone but interacting with the plots works best on a laptop or desktop.
+This page can be viewed on a tablet or smartphone but interacting with the plots works best on a laptop or desktop.
 
 Updated `r toString(Sys.Date())`
 
@@ -143,15 +143,15 @@ n_a = k_s \times n_p \times r_v = k_s \times n_p \times \frac{n_p}{n_p+n_n} = k_
 \end{equation}
 $$
 
-$\large Where:\hspace{1mm}n_a \hspace{1mm} is \hspace{1mm} the \hspace{1mm} actual \hspace{1mm} number \hspace{1mm} of \hspace{1mm} cases$
+$\large Where:n_a \hspace{1mm} is \hspace{1mm} the \hspace{1mm} actual \hspace{1mm} number \hspace{1mm} of \hspace{1mm} cases$
 
-$\large \hspace{21mm}k_s \hspace{1mm} is \hspace{1mm} the \hspace{1mm} antibody \hspace{1mm} constant$
+$\large \hspace{20mm}k_s \hspace{1mm} is \hspace{1mm} the \hspace{1mm} antibody \hspace{1mm} constant$
 
-$\large \hspace{21mm}n_p \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} positive \hspace{1mm} tests$
+$\large \hspace{20mm}n_p \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} positive \hspace{1mm} tests$
 
-$\large \hspace{21mm}r_v \hspace{1mm} is \hspace{1mm} the \hspace{1mm} test \hspace{1mm} positive \hspace{1mm} rate$
+$\large \hspace{20mm}r_v \hspace{1mm} is \hspace{1mm} the \hspace{1mm} test \hspace{1mm} positive \hspace{1mm} rate$
 
-$\large \hspace{21mm}n_n \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} negative \hspace{1mm} tests$
+$\large \hspace{20mm}n_n \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} negative \hspace{1mm} tests$
 
 The antibody constant is found by solving for *k<sub>s* in the equation below. The antibody seroprevalence *r<sub>s* is from the [CDC's Nationwide Commercial Laboratory Seroprevalence Survey](https://covid.cdc.gov/covid-data-tracker/?CDC_AA_refVal=https%3A%2F%2Fwww.cdc.gov%2Fcoronavirus%2F2019-ncov%2Fcases-updates%2Fcommercial-labs-interactive-serology-dashboard.html#national-lab) that was done during the first two weeks of August 2020.
 
@@ -161,9 +161,9 @@ $$
 r_s = \frac{k_s}{N} \times \frac{{n_p}^2}{n_p+n_n}
 \end{equation}
 $$
-$\large Where:\hspace{1mm}r_s \hspace{1mm} is \hspace{1mm} the \hspace{1mm} antibody \hspace{1mm} seroprevalence$
+$\large Where:r_s \hspace{1mm} is \hspace{1mm} the \hspace{1mm} antibody \hspace{1mm} seroprevalence$
 
-$\large \hspace{21mm}N \hspace{1mm} is \hspace{1mm} the \hspace{1mm} total \hspace{1mm} population$
+$\large \hspace{20mm}N \hspace{1mm} is \hspace{1mm} the \hspace{1mm} total \hspace{1mm} population$
 
 ```{r actualCases, echo=FALSE}
 fig <- plot_ly(df_US, x = ~date, y = ~dailyActualCasesRollMean, type = "scatter", mode = "lines", color = I("black"), name = "Daily Actual", width=1010) %>%
@@ -194,8 +194,8 @@ fig <- plot_ly(
   zmax = 10000,
   width = 890,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Actual Daily Cases by State")
 fig
 
@@ -214,8 +214,8 @@ fig <- plot_ly(
   zmax = 1000,
   width = 897,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Actual Cases per 100,000 by State")
 fig
 ```
@@ -232,9 +232,9 @@ $$
 
 $\large Where: r_v \hspace{1mm} is \hspace{1mm} the \hspace{1mm} test \hspace{1mm} positive \hspace{1mm} rate$
 
-$\large \hspace{21mm}n_p \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} positive \hspace{1mm} tests$
+$\large \hspace{20mm}n_p \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} positive \hspace{1mm} tests$
 
-$\large \hspace{21mm}n_n \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} negative \hspace{1mm} tests$
+$\large \hspace{20mm}n_n \hspace{1mm} is \hspace{1mm} the \hspace{1mm} number \hspace{1mm} of \hspace{1mm} negative \hspace{1mm} tests$
 
 According to [Johns Hopkins](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html):
 
@@ -281,8 +281,8 @@ fig <- plot_ly(
   zmax = 5,
   width = 875,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Daily Test Positive Rate by State [%]")
 fig
 
@@ -302,8 +302,8 @@ fig <- plot_ly(
   zmax = 60,
   width = 883,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Daily Test Positive Rate by State [%]")
 fig
 ```
@@ -332,8 +332,8 @@ fig <- plot_ly(
   zmin = 0,
   width = 890,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Current Hospitalizations by State")
 fig
 
@@ -350,8 +350,8 @@ fig <- plot_ly(
   zmin = 0,
   width = 890,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Current Hospitalizations per 100,000 by State")
 fig
 ```
@@ -383,8 +383,8 @@ fig <- plot_ly(
   zmin = 0,
   width = 890,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Daily Deaths by State")
 fig
 
@@ -402,8 +402,8 @@ fig <- plot_ly(
   zmin = 0,
   width = 887,
   height = 800) %>%
-  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16)),
-         yaxis = list(gridcolor = "black", side = "left"),
+  layout(xaxis = list(showgrid = FALSE, tickfont = list(size = 16), showspikes = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE),
          title = "Daily Deaths per 100,000 by State")
 fig
 ```
