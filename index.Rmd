@@ -369,9 +369,9 @@ Row {data-height=500}
 fig <-
   df_US %>% plot_ly() %>%
   add_trace(x = ~date, y = ~dailyEstimatedActualCasesAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "Daily Actual", showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~dailyPositiveTestsAverage, type = "scatter", mode = "lines", color = I("black"), name = "Daily Confirmed", line = list(dash = "dash"), showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~dailyPositiveTestsAverage, type = "scatter", mode = "lines", color = I("black"), name = "Daily Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~totalActualCases, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Actual", showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~totalPositiveTests, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Confirmed", line = list(dash = "dash"), showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalPositiveTests, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
          yaxis = list(title = "Daily Cases (7 Day Average)", side="left", automargin = TRUE, fixedrange = TRUE),
          yaxis2 = list(title = "Total Cases", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
@@ -387,9 +387,9 @@ fig
 fig <-
   df_US %>% plot_ly() %>%
   add_trace(x = ~date, y = ~dailyEstimatedActualCasesAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "Daily Actual", showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~dailyPositiveTestsAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), name = "Daily Confirmed", line = list(dash = "dash"), showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~dailyPositiveTestsAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), name = "Daily Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~totalActualCases/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Actual", showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~totalPositiveTests/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Confirmed", line = list(dash = "dash"), showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalPositiveTests/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
          yaxis = list(title = "Daily Cases Per 100K (7 Day Average)", side="left", automargin = TRUE, fixedrange = TRUE),
          yaxis2 = list(title = "Total Cases Per 100K", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
@@ -538,7 +538,7 @@ fig <-
   add_trace(x = ~date, y = ~dailyDeathsAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~totalDeaths, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
-         yaxis = list(title = "Daily Deaths (7 Day Average)", side="left", automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Deaths", side="left", automargin = TRUE, fixedrange = TRUE),
          yaxis2 = list(title = "Total Deaths", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
          legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
          hovermode = "compare") %>%
@@ -554,7 +554,7 @@ fig <-
   add_trace(x = ~date, y = ~dailyDeathsAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~totalDeaths/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
-         yaxis = list(title = "Daily Deaths Per 100K (7 Day Average)", side="left", automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Deaths Per 100K", side="left", automargin = TRUE, fixedrange = TRUE),
          yaxis2 = list(title = "Total Deaths Per 100K", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
          legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
          hovermode = "compare") %>%
