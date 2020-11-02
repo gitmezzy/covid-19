@@ -126,6 +126,8 @@ Summary {data-orientation=rows}
 Summary {.sidebar}
 -------------------------------------
 
+This website works best on laptops, desktops, or tablets. It does not work well on smartphones right now. If you are using a phone double click on this page to enable scrolling.
+
 The purpose of this website is to present COVID-19 trends in the United States in clear and hopefully useful ways, using graphs that show estimated actual cases, hospitalizations, and deaths over time for each state and for the country as a whole.
 
 An estimate of actual cases is made by using the test positive rate to correct the shape of the cases curve over time as the number of tests change and by using the [CDC's Nationwide Commercial Laboratory Seroprevalence Survey](https://covid.cdc.gov/covid-data-tracker/?CDC_AA_refVal=https%3A%2F%2Fwww.cdc.gov%2Fcoronavirus%2F2019-ncov%2Fcases-updates%2Fcommercial-labs-interactive-serology-dashboard.html#national-lab) for antibodies to calibrate the magnitude of the cases curve.
@@ -137,8 +139,6 @@ Data presentation approach:
 - Line graphs are used to show trends for the U.S. as a whole. Typically the x-axis is date and the y-axis is the parameter of interest. Sometimes a secondary y-axis on the right is used to show totals.
 - Heat maps are used to show trends by state since they can display every date, each state, and the parameter of interest all at once.
 - Move your cursor over the graphs to display the data values.
-
-This site works best on a laptop, desktop, or tablet. It does not work well on smartphones.
 
 [Raw data](https://covidtracking.com/api/v1/states/daily.csv) is from the [COVID Tracking Project](https://covidtracking.com/).
 
@@ -602,6 +602,85 @@ fig
 x <- sort(pull(distinct(df[,"date"])))
 y <- pull(distinct(df[,"state"]))
 z <- matrix(pull(df[,"dailyDeathsAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
+z <- t(z)
+z[z < 0] <- NA
+z[is.infinite(z)] <- NA
+fig <- plot_ly(
+  x = x,
+  y = y,
+  z = z,
+  type = "heatmap",
+  zmin = 0) %>%
+  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  config(displayModeBar = FALSE, fillFrame = TRUE)
+fig
+```
+
+Tests {data-orientation=rows}
+=====================================  
+
+Row {data-height=500}
+-------------------------------------
+### Tests in the United States
+```{r}
+fig <-
+  df_US %>% plot_ly() %>%
+  add_trace(x = ~date, y = ~dailyTests, type = "scatter", mode = "lines", color = I("gray"), yaxis = "y", name = "Daily", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~dailyTestsAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalTests, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
+  layout(xaxis = list(title = FALSE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Tests", side="left", automargin = TRUE, fixedrange = TRUE),
+         yaxis2 = list(title = "Total Tests", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
+         legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
+         hovermode = "compare") %>%
+  config(displayModeBar = FALSE)
+fig
+```
+
+### Tests Per 100,000 in the United States
+```{r}
+fig <-
+  df_US %>% plot_ly() %>%
+  add_trace(x = ~date, y = ~dailyTests/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("gray"), yaxis = "y", name = "Daily", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~dailyTestsAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalTests/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
+  layout(xaxis = list(title = FALSE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Tests Per 100K", side="left", automargin = TRUE, fixedrange = TRUE),
+         yaxis2 = list(title = "Total Tests Per 100K", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
+         legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
+         hovermode = "compare") %>%
+  config(displayModeBar = FALSE)
+fig
+```
+
+Row {data-height=500}
+-------------------------------------
+### Daily Tests by State (7 Day Average)
+```{r}
+x <- sort(pull(distinct(df[,"date"])))
+y <- pull(distinct(df[,"state"]))
+z <- matrix(pull(df[,"dailyTestsAverage"]), nrow = length(x), ncol = length(y))
+z <- t(z)
+z[z < 0] <- NA
+z[is.infinite(z)] <- NA
+fig <- plot_ly(
+  x = x,
+  y = y,
+  z = z,
+  type = "heatmap",
+  zmin = 0) %>%
+  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  config(displayModeBar = FALSE, fillFrame = TRUE)
+fig
+```
+
+### Daily Test Per 100,000 by State (7 Day Average)
+```{r}
+x <- sort(pull(distinct(df[,"date"])))
+y <- pull(distinct(df[,"state"]))
+z <- matrix(pull(df[,"dailyTestsAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
 z <- t(z)
 z[z < 0] <- NA
 z[is.infinite(z)] <- NA
