@@ -126,7 +126,7 @@ Summary {data-orientation=rows}
 Summary {.sidebar}
 -------------------------------------
 
-The purpose of this site is to present COVID-19 trends in the United States in a clear and hopefully useful way, using graphs that show estimated actual cases, hospitalizations, and deaths over time for each state and for the whole country.
+The purpose of this website is to present COVID-19 trends in the United States in clear and hopefully useful ways, using graphs that show estimated actual cases, hospitalizations, and deaths over time for each state and for the country as a whole.
 
 An estimate of actual cases is made by using the test positive rate to correct the shape of the cases curve over time as the number of tests change and by using the [CDC's Nationwide Commercial Laboratory Seroprevalence Survey](https://covid.cdc.gov/covid-data-tracker/?CDC_AA_refVal=https%3A%2F%2Fwww.cdc.gov%2Fcoronavirus%2F2019-ncov%2Fcases-updates%2Fcommercial-labs-interactive-serology-dashboard.html#national-lab) for antibodies to calibrate the magnitude of the cases curve.
 
@@ -138,7 +138,7 @@ Data presentation approach:
 - Heat maps are used to show trends by state since they can display every date, each state, and the parameter of interest all at once.
 - Move your cursor over the graphs to display the data values.
 
-Navigate the site by using the tabs at the top of the page or the drop-down menu on mobile devices.
+This site works best on a laptop, desktop, or tablet. It does not work well on smartphones.
 
 [Raw data](https://covidtracking.com/api/v1/states/daily.csv) is from the [COVID Tracking Project](https://covidtracking.com/).
 
@@ -311,7 +311,20 @@ fig <-
   add_trace(x = ~date, y = ~dailyTestPositiveRate, type = "scatter", mode = "lines", color = I("gray"), yaxis = "y", name = "Daily", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~dailyTestPositiveRateAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
-         yaxis = list(title = "Daily Test Positive Rate", side="left", automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Test Positive Rate [%]", side="left", automargin = TRUE, fixedrange = TRUE),
+         legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
+         hovermode = "compare") %>%
+  config(displayModeBar = FALSE)
+fig
+```
+
+### Daily Test Positive Rate Change in the United States (7 Day Average)
+```{r}
+fig <-
+  df_US %>% plot_ly() %>%
+  add_trace(x = ~date, y = ~rollmean(dailyTestPositiveRateAverage-lag(dailyTestPositiveRateAverage), 7, fill = NA), type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
+  layout(xaxis = list(title = FALSE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Test Positive Rate Change [%]", side="left", automargin = TRUE, fixedrange = TRUE),
          legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
          hovermode = "compare") %>%
   config(displayModeBar = FALSE)
