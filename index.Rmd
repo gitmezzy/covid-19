@@ -11,7 +11,8 @@ output:
 ```{r global, include=FALSE}
 library(readr)
 library(tidyr)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
+library(dtplyr)
 library(lubridate)
 library(zoo)
 library(plotly)
@@ -74,8 +75,8 @@ df <-
       mutate(state = "US")
   )
 
-df <-
-  df %>%
+df %<>%
+  lazy_dt() %>%
   filter(date >= as.Date("2020-03-01")) %>%
   arrange(state, date) %>%
   group_by(state) %>%
@@ -91,7 +92,8 @@ df <-
     dailyTestPositiveRate = 100*dailyPositiveTests/(dailyPositiveTests+dailyNegativeTests),
     dailyTestPositiveRateAverage = 100*dailyPositiveTestsAverage/(dailyPositiveTestsAverage+dailyNegativeTestsAverage),
     dailyEstimatedActualCases = floor(antibodyConstant*dailyPositiveTests*(dailyPositiveTests/dailyTests)),
-    dailyEstimatedActualCasesAverage = floor(antibodyConstant*dailyPositiveTestsAverage*(dailyPositiveTestsAverage/dailyTestsAverage)))
+    dailyEstimatedActualCasesAverage = floor(antibodyConstant*dailyPositiveTestsAverage*(dailyPositiveTestsAverage/dailyTestsAverage))) %>%
+  as_tibble()
 
 df <- df %>% replace_na(list(
   dailyDeaths = 0,
@@ -106,7 +108,7 @@ df <-
   arrange(state, date) %>%
   group_by(state) %>%
   mutate(
-    totalActualCases = cumsum(dailyEstimatedActualCases),
+    totalEstimatedActualCases = cumsum(dailyEstimatedActualCases),
     totalTests = cumsum(dailyTests),
     totalPositiveTests = cumsum(dailyPositiveTests),
     totalDeaths = cumsum(dailyDeaths))
@@ -120,13 +122,15 @@ df <-
   filter(state != "US", .preserve = TRUE)
 ```
 
-Summary {data-orientation=rows}
+Summary {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 
 Summary {.sidebar}
 -------------------------------------
 
-This website works best on laptops, desktops, or tablets. It does not work well on smartphones right now. If you are using a phone double click on this page to enable scrolling.
+This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone double click on this page to enable scrolling.
+
+Navigate the site by selecting from the Pages menu.
 
 The purpose of this website is to present COVID-19 trends in the United States in clear and hopefully useful ways, using graphs that show estimated actual cases, hospitalizations, and deaths over time for each state and for the country as a whole.
 
@@ -154,7 +158,7 @@ fig <-
   df_US %>% plot_ly() %>%
   add_trace(x = ~date, y = ~dailyEstimatedActualCases, type = "scatter", mode = "lines", color = I("gray"), yaxis = "y", name = "Daily", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~dailyEstimatedActualCasesAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~totalActualCases, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalEstimatedActualCases, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
          yaxis = list(title = "Daily Estimated Actual Cases", side="left", automargin = TRUE, fixedrange = TRUE),
          yaxis2 = list(title = "Total Estimated Actual Cases", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
@@ -189,7 +193,6 @@ x <- sort(pull(distinct(df[,"date"])))
 y <- pull(distinct(df[,"state"]))
 z <- matrix(pull(df[,"dailyEstimatedActualCasesAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
 z <- t(z)
-z[z >3900] <- NA
 z[z < 0] <- NA
 z[is.infinite(z)] <- NA
 fig <- plot_ly(
@@ -225,7 +228,7 @@ fig <- plot_ly(
 fig
 ```
 
-Methodology {data-orientation=rows}
+Methodologies {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 ### Test Positive Rate
 The test positive rate is the fraction of all COVID-19 tests that are positive.
@@ -262,7 +265,7 @@ The higher the percent positive is, the more concerning it is. As a rule of thum
 ### Estimation of Actual Cases
 The confirmed daily cases curve that is [often reported](https://graphics.reuters.com/HEALTH-CORONAVIRUS/USA-TRENDS/dgkvlgkrkpb/index.html) can be misleading. It fails to account for the number of daily tests and thus skews the daily cases towards points in time when more tests were done. Testing has increased significantly since the start of the pandemic and thus it must be accounted for when trying to estimate the actual number of cases over time. For example, in the U.S. in mid March 2020 only about 10,000 tests were done per day, but by the end of October 2020 1 million tests were being done each day.
 
-One way to estimate the actual number of cases in a way that accounts for testing is to normalize the number of confirmed positive tests by the test positive rate and multiply by by a constant, referred to here as the *antibody constant*. The test positive rate, defined as the the fraction of all COVID-19 tests that are positive, is described in more detail in its own section.
+One way to estimate the actual number of cases in a way that accounts for testing is to normalize the number of confirmed positive tests by the test positive rate and multiply by by a constant, referred to here as the *antibody constant*.
 
 Almost all references to testing on this page are for viral PCR tests. The one exception is the antibody seroprevalence which is based on serology tests that look for antibodies which can show prior exposure to COVID-19. [Johns Hopkins](https://coronavirus.jhu.edu/testing/testing-faq/overview) has more details on viral PCR and antibody serological tests.
 
@@ -299,7 +302,7 @@ $\large \hspace{20mm}N \hspace{1mm} is \hspace{1mm} the \hspace{1mm} total \hspa
 
 <br/><br/>
 
-Test Positive Rate {data-orientation=rows}
+Test Positive Rate {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 
 Row {data-height=500}
@@ -372,7 +375,7 @@ fig <- plot_ly(
 fig
 ```
 
-Estimated Actual Cases {data-orientation=rows}
+Estimated Actual Cases {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 
 Row {data-height=500}
@@ -383,7 +386,7 @@ fig <-
   df_US %>% plot_ly() %>%
   add_trace(x = ~date, y = ~dailyEstimatedActualCasesAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "Daily Actual", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~dailyPositiveTestsAverage, type = "scatter", mode = "lines", color = I("black"), name = "Daily Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~totalActualCases, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Actual", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalEstimatedActualCases, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Actual", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~totalPositiveTests, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
          yaxis = list(title = "Daily Cases (7 Day Average)", side="left", automargin = TRUE, fixedrange = TRUE),
@@ -401,7 +404,7 @@ fig <-
   df_US %>% plot_ly() %>%
   add_trace(x = ~date, y = ~dailyEstimatedActualCasesAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "Daily Actual", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~dailyPositiveTestsAverage/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("black"), name = "Daily Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
-  add_trace(x = ~date, y = ~totalActualCases/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Actual", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~totalEstimatedActualCases/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Actual", showlegend = TRUE) %>%
   add_trace(x = ~date, y = ~totalPositiveTests/populationUnitedStates*100000, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total Confirmed", line = list(dash = "dot"), showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
          yaxis = list(title = "Daily Cases Per 100K (7 Day Average)", side="left", automargin = TRUE, fixedrange = TRUE),
@@ -458,7 +461,7 @@ fig <- plot_ly(
 fig
 ```
 
-Hospitalizations {data-orientation=rows}
+Hospitalizations {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 
 Row {data-height=500}
@@ -538,7 +541,7 @@ fig <- plot_ly(
 fig
 ```
 
-Deaths {data-orientation=rows}
+Deaths {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 
 Row {data-height=500}
@@ -617,7 +620,7 @@ fig <- plot_ly(
 fig
 ```
 
-Tests {data-orientation=rows}
+Tests {data-orientation=rows data-navmenu="Pages"}
 =====================================  
 
 Row {data-height=500}
