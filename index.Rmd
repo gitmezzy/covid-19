@@ -128,7 +128,7 @@ Summary {data-orientation=rows data-navmenu="Pages"}
 Summary {.sidebar}
 -------------------------------------
 
-This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone double click on this page to enable scrolling.
+This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone be sure to use a web browser like Safari, Chrome, or Firefox to view this page, not a browser built into an app like Facebook's. Once the page is loaded rotate your phone to landscape (horizontal) view to enable scrolling.
 
 Navigate the site by selecting from the Pages menu.
 
