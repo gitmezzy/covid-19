@@ -128,7 +128,7 @@ Summary {data-orientation=rows data-navmenu="Pages"}
 Summary {.sidebar}
 -------------------------------------
 
-This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone be sure to use a web browser like Safari, Chrome, or Firefox to view this page, not a browser built into an app like Facebook's. Once the page is loaded rotate your phone to landscape (horizontal) view to enable scrolling.
+This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone be sure to use a web browser like Safari, Chrome, or Firefox to view this page, not a browser built into an app like Facebook's. Rotate your phone to landscape (horizontal) view and then refresh this page to to enable scrolling.
 
 Navigate the site by selecting from the Pages menu.
 
@@ -366,7 +366,7 @@ fig <- plot_ly(
   y = y,
   z = z,
   zmin = 0,
-  zmax = 60,
+  zmax = 70,
   type = "heatmap",
   zmin = 0) %>%
   layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
@@ -445,7 +445,6 @@ x <- sort(pull(distinct(df[,"date"])))
 y <- pull(distinct(df[,"state"]))
 z <- matrix(pull(df[,"dailyEstimatedActualCasesAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
 z <- t(z)
-z[z >3900] <- NA
 z[z < 0] <- NA
 z[is.infinite(z)] <- NA
 fig <- plot_ly(
@@ -525,7 +524,6 @@ x <- sort(pull(distinct(df[,"date"])))
 y <- pull(distinct(df[,"state"]))
 z <- matrix(pull(df[,"hospitalizedCurrently"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
 z <- t(z)
-z[z >3900] <- NA
 z[z < 0] <- NA
 z[is.infinite(z)] <- NA
 fig <- plot_ly(
