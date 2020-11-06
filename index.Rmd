@@ -128,7 +128,7 @@ Summary {data-orientation=rows data-navmenu="Pages"}
 Summary {.sidebar}
 -------------------------------------
 
-This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone be sure to use a web browser like Safari, Chrome, or Firefox to view this page, not a browser built into an app like Facebook's. Rotate your phone to landscape (horizontal) view and then refresh this page to to enable scrolling.
+This website works best on laptops and desktop computers. It does not work as well on tablets or smartphones. If you are using a phone be sure to use a web browser like Safari, Chrome, or Firefox to view this page, not a browser built into an app like Facebook. Rotate your phone to landscape (horizontal) view and then refresh this page to to enable scrolling.
 
 Navigate the site by selecting from the Pages menu.
 
@@ -359,14 +359,14 @@ fig <- plot_ly(
 fig
 ```
 
-### Daily Test Positive Rate by State [%] (7 Day Average with z-Axis Limited to 60%)
+### Daily Test Positive Rate by State [%] (7 Day Average)
 ```{r}
+z[z > 70] <- NA
 fig <- plot_ly(
   x = x,
   y = y,
   z = z,
   zmin = 0,
-  zmax = 70,
   type = "heatmap",
   zmin = 0) %>%
   layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
@@ -684,11 +684,13 @@ y <- pull(distinct(df[,"state"]))
 z <- matrix(pull(df[,"dailyTestsAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
 z <- t(z)
 z[z < 0] <- NA
+z[z > 3857] <- NA
 z[is.infinite(z)] <- NA
 fig <- plot_ly(
   x = x,
   y = y,
   z = z,
+  zmax = 1000,
   type = "heatmap",
   zmin = 0) %>%
   layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
