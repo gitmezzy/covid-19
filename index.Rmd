@@ -325,7 +325,7 @@ fig
 ```{r}
 fig <-
   df_US %>% plot_ly() %>%
-  add_trace(x = ~date, y = ~rollmean(dailyTestPositiveRateAverage-lag(dailyTestPositiveRateAverage), 7, fill = NA), type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~dailyTestPositiveRateAverage-lag(dailyTestPositiveRateAverage), type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
   layout(xaxis = list(title = FALSE, fixedrange = TRUE),
          yaxis = list(title = "Daily Test Positive Rate Change [%]", side="left", automargin = TRUE, fixedrange = TRUE),
          legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
