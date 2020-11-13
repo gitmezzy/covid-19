@@ -187,43 +187,31 @@ fig
 
 Row {data-height=500}
 -------------------------------------
-### Daily Estimated Actual Cases Per 100,000 by State (7 Day Average)
+### Hospitalizations in the United States
 ```{r}
-x <- sort(pull(distinct(df[,"date"])))
-y <- pull(distinct(df[,"state"]))
-z <- matrix(pull(df[,"dailyEstimatedActualCasesAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
-z <- t(z)
-z[z < 0] <- NA
-z[is.infinite(z)] <- NA
-fig <- plot_ly(
-  x = x,
-  y = y,
-  z = z,
-  zmin = 0,
-  type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+fig <-
+  df_US %>% plot_ly() %>%
+  add_trace(x = ~date, y = ~hospitalizedCurrently, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "Current", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~hospitalizedCumulative, type = "scatter", mode = "lines", color = I("red"), yaxis = "y2", name = "Total", showlegend = TRUE) %>%
+  layout(xaxis = list(title = FALSE, fixedrange = TRUE),
+         yaxis = list(title = "Current Hospitalizations", side="left", automargin = TRUE, fixedrange = TRUE),
+         yaxis2 = list(title = "Total Hospitalizations", titlefont = list(color = "red"), tickfont = list(color = "red"), side="right", overlaying = "y", automargin = TRUE, fixedrange = TRUE),
+         legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
+         hovermode = "compare") %>%
   config(displayModeBar = FALSE)
 fig
 ```
 
-### Daily Deaths Per 100,000 by State (7 Day Average)
+### Test Positive Rate in the United States
 ```{r}
-x <- sort(pull(distinct(df[,"date"])))
-y <- pull(distinct(df[,"state"]))
-z <- matrix(pull(df[,"dailyDeathsAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
-z <- t(z)
-z[z < 0] <- NA
-z[is.infinite(z)] <- NA
-fig <- plot_ly(
-  x = x,
-  y = y,
-  z = z,
-  type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+fig <-
+  df_US %>% plot_ly() %>%
+  add_trace(x = ~date, y = ~dailyTestPositiveRate, type = "scatter", mode = "lines", color = I("gray"), yaxis = "y", name = "Daily", showlegend = TRUE) %>%
+  add_trace(x = ~date, y = ~dailyTestPositiveRateAverage, type = "scatter", mode = "lines", color = I("black"), yaxis = "y", name = "7 Day Average", showlegend = TRUE) %>%
+  layout(xaxis = list(title = FALSE, fixedrange = TRUE),
+         yaxis = list(title = "Daily Test Positive Rate [%]", side="left", automargin = TRUE, fixedrange = TRUE),
+         legend = list(orientation = "h", xanchor = "center", yanchor = "top", x = 0.5, y = 1.1),
+         hovermode = "compare") %>%
   config(displayModeBar = FALSE)
 fig
 ```
