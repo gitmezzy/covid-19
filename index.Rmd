@@ -340,9 +340,10 @@ fig <- plot_ly(
   zmin = 0,
   zmax = 5,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -356,9 +357,10 @@ fig <- plot_ly(
   z = z,
   zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -420,9 +422,10 @@ fig <- plot_ly(
   z = z,
   zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -441,9 +444,10 @@ fig <- plot_ly(
   z = z,
   zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -499,9 +503,10 @@ fig <- plot_ly(
   z = z,
   zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -520,9 +525,10 @@ fig <- plot_ly(
   z = z,
   zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -579,9 +585,10 @@ fig <- plot_ly(
   y = y,
   z = z,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -599,9 +606,10 @@ fig <- plot_ly(
   y = y,
   z = z,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -657,10 +665,12 @@ fig <- plot_ly(
   x = x,
   y = y,
   z = z,
+  zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
@@ -672,17 +682,18 @@ y <- pull(distinct(df[,"state"]))
 z <- matrix(pull(df[,"dailyTestsAverage"]/df[,"population"]*100000), nrow = length(x), ncol = length(y))
 z <- t(z)
 z[z < 0] <- NA
-z[z > 3857] <- NA
+z[z > 1500] <- NA
 z[is.infinite(z)] <- NA
 fig <- plot_ly(
   x = x,
   y = y,
   z = z,
-  zmax = 1000,
+  zmin = 0,
   type = "heatmap",
-  zmin = 0) %>%
-  layout(xaxis = list(showgrid = FALSE, showspikes = TRUE, automargin = TRUE, fixedrange = TRUE),
-         yaxis = list(gridcolor = "black", side = "left", showspikes = TRUE, automargin = TRUE, fixedrange = TRUE)) %>%
+  colorscale = "RdBu",
+  ygap = 0.2) %>%
+  layout(xaxis = list(showgrid = FALSE, automargin = TRUE, fixedrange = TRUE),
+         yaxis = list(gridcolor = "black", side = "left", automargin = TRUE, fixedrange = TRUE)) %>%
   config(displayModeBar = FALSE, fillFrame = TRUE)
 fig
 ```
